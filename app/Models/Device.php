@@ -12,6 +12,7 @@ class Device extends Model
     protected $fillable = [
         'user_id',
         'subscription_id',
+        'device_id',
         'name',
         'phone',
         'limit',

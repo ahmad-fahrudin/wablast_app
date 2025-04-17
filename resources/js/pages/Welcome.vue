@@ -25,9 +25,8 @@ const scrollToSection = (sectionId) => {
   </Head>
 
   <!-- Fixed Header -->
-  <header class="fixed top-0 left-0 right-0 bg-white z-50 shadow-md">
+  <header class="fixed top-0 left-0 right-0 bg-white z-50 shadow-sm">
     <div class="container mx-auto px-6 py-4">
-      <!-- Added max-width and mx-auto to center the header content -->
       <div class="max-w-6xl mx-auto flex justify-between items-center">
         <div class="flex items-center">
           <div class="text-2xl font-bold text-green-500 flex items-center">
@@ -62,47 +61,47 @@ const scrollToSection = (sectionId) => {
     <!-- Hero Section (Home) -->
     <section id="home" class="min-h-screen">
       <!-- First Part (Image 1) -->
-    <div class="bg-white pb-32 pt-16 relative overflow-hidden">
-      <div class="container mx-auto px-6">
-        <!-- Centering the content better by adding max-width and mx-auto -->
-        <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col lg:flex-row items-center justify-between">
-          <!-- Left Column -->
-          <div class="lg:w-1/2 mb-10 lg:mb-0">
-            <div class="bg-green-500 text-white py-2 px-6 rounded-lg inline-block mb-4">
-            Wablas with Multi Device and Multi Agent
-            </div>
-            <h2 class="text-2xl lg:text-3xl text-gray-800 mb-4">
-            WABLAS is an Whatsapp API Gateway for WhatsApp Business API. It allows developers to interact with WhatsApp's service without having to deal with the complexities of the WhatsApp protocol.
-            </h2>
-            <p class="text-lg text-gray-700 mb-8">
-            With WABLAS, developers can easily send and receive messages, make and receive calls, and manage contacts using a simple HTTP-based API.
-            </p>
-            <p class="text-lg text-gray-700">
-            By using WABLAS, developers can create WhatsApp-based applications such as chatbots, customer support systems, and automated message campaigns. WABLASprovides a wide range of functionalities such as sending and receiving messages, creating and managing contacts, and handling media files, among others.
-            </p>
-          </div>
+      <div class="bg-gradient-to-b  pb-32 pt-16 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+          <!-- Centering the content better by adding max-width and mx-auto -->
+          <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col lg:flex-row items-center justify-between">
+              <!-- Left Column -->
+              <div class="lg:w-1/2 mb-10 lg:mb-0">
+                <div class="bg-green-500 text-white py-2 px-6 rounded-lg inline-block mb-4">
+                  Wablas with Multi Device and Multi Agent
+                </div>
+                <h2 class="text-2xl lg:text-3xl text-gray-800 mb-4">
+                  WABLAS is an Whatsapp API Gateway for WhatsApp Business API. It allows developers to interact with WhatsApp's service without having to deal with the complexities of the WhatsApp protocol.
+                </h2>
+                <p class="text-lg text-gray-700 mb-8">
+                  With WABLAS, developers can easily send and receive messages, make and receive calls, and manage contacts using a simple HTTP-based API.
+                </p>
+                <p class="text-lg text-gray-700">
+                  By using WABLAS, developers can create WhatsApp-based applications such as chatbots, customer support systems, and automated message campaigns. WABLASprovides a wide range of functionalities such as sending and receiving messages, creating and managing contacts, and handling media files, among others.
+                </p>
+              </div>
 
-          <!-- Right Column -->
-          <div class="lg:w-1/2">
-            <div class="bg-white p-4 rounded-lg shadow-lg">
-            <div class="bg-green-500 text-white py-1 px-4 rounded text-sm inline-block mb-2">
-              Wablas with Store Platform
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Selling products via whatsapp catalog is easier with Wablas Store</h3>
-            <p class="text-sm text-gray-600 mb-4">
-              Easy manage orders, products, customers, shipping cost, to reports in one application.
-            </p>
-            <p class="text-sm text-gray-600">
-              And Whatsapp API gateway service for sending messages, notification, scheduler, reminder, and tracking with simple integration for your business
-            </p>
-            <img src="/api/placeholder/800/400" alt="Wablas Store Dashboard" class="mt-4 rounded-lg" />
+              <!-- Right Column -->
+              <div class="lg:w-1/2">
+                <div class="bg-white p-4 rounded-lg shadow-lg">
+                  <div class="bg-green-500 text-white py-1 px-4 rounded text-sm inline-block mb-2">
+                    Wablas with Store Platform
+                  </div>
+                  <h3 class="text-xl font-semibold mb-2">Selling products via whatsapp catalog is easier with Wablas Store</h3>
+                  <p class="text-sm text-gray-600 mb-4">
+                    Easy manage orders, products, customers, shipping cost, to reports in one application.
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    And Whatsapp API gateway service for sending messages, notification, scheduler, reminder, and tracking with simple integration for your business
+                  </p>
+                  <img src="/api/placeholder/800/400" alt="Wablas Store Dashboard" class="mt-4 rounded-lg" />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
-    </div>
 
       <!-- Second Part (Image 2) -->
       <div class="py-20 bg-white">
