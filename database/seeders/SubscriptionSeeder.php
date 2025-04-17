@@ -17,6 +17,12 @@ class SubscriptionSeeder extends Seeder
         // Create subscription plans
         $subscriptions = [
             [
+                'name' => 'Free',
+                'price' => 0,
+                'limit' => 100,
+                'is_active' => true
+            ],
+            [
                 'name' => 'Small',
                 'price' => 50000,
                 'limit' => 1000,
@@ -44,26 +50,26 @@ class SubscriptionSeeder extends Seeder
 
         // Define all possible features
         $allFeatures = [
-            'Unlimited Device Connection' => [false, true, true, true],
-            'Auto Reply Messages' => [true, true, true, true],
-            'Bulk Messaging' => [true, true, true, true],
-            'Contact Management' => [true, true, true, true],
-            'Message Templates' => [true, true, true, true],
-            'Message History' => [true, true, true, true],
-            'Message Scheduling' => [false, true, true, true],
-            'Message Analytics' => [false, false, true, true],
-            'API Access' => [false, true, true, true],
-            'Priority Support' => [false, false, true, true],
-            'Custom Webhooks' => [false, false, true, true],
-            'Media Messages' => [true, true, true, true],
-            'Group Management' => [false, true, true, true],
-            'Message Broadcasting' => [false, true, true, true],
-            'Multi-User Access' => [false, false, false, true],
-            'Message Export' => [false, true, true, true],
-            'Custom Reporting' => [false, false, true, true],
-            'SMS Fallback' => [false, false, false, true],
-            'Custom Branding' => [false, false, false, true],
-            '24/7 Dedicated Support' => [false, false, false, true],
+            'Unlimited Device Connection' => [false, false, true, true, true],
+            'Auto Reply Messages' => [false, true, true, true, true],
+            'Bulk Messaging' => [false, true, true, true, true],
+            'Contact Management' => [true, true, true, true, true],
+            'Message Templates' => [false, true, true, true, true],
+            'Message History' => [true, true, true, true, true],
+            'Message Scheduling' => [false, false, true, true, true],
+            'Message Analytics' => [false, false, false, true, true],
+            'API Access' => [false, false, true, true, true],
+            'Priority Support' => [false, false, false, true, true],
+            'Custom Webhooks' => [false, false, false, true, true],
+            'Media Messages' => [false, true, true, true, true],
+            'Group Management' => [false, false, true, true, true],
+            'Message Broadcasting' => [false, false, true, true, true],
+            'Multi-User Access' => [false, false, false, false, true],
+            'Message Export' => [false, false, true, true, true],
+            'Custom Reporting' => [false, false, false, true, true],
+            'SMS Fallback' => [false, false, false, false, true],
+            'Custom Branding' => [false, false, false, false, true],
+            '24/7 Dedicated Support' => [false, false, false, false, true],
         ];
 
         foreach ($subscriptions as $index => $subscription) {
