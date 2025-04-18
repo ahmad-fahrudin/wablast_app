@@ -10,13 +10,13 @@ class SubscriptionDetail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'subscribe_id',
+        'subscription_id',
         'item',
         'is_checklist',
     ];
 
     public function subscription()
     {
-        return $this->belongsTo(Subscription::class, 'subscribe_id');
+        return $this->belongsTo(Subscription::class);
     }
 }

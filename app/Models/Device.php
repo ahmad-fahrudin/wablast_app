@@ -40,11 +40,6 @@ class Device extends Model
         return $this->hasOne(AutoReply::class);
     }
 
-    public function subscriptionUsers()
-    {
-        return $this->hasMany(SubscriptionUser::class);
-    }
-
     public function messageHistory()
     {
         return $this->hasMany(MessageHistory::class);

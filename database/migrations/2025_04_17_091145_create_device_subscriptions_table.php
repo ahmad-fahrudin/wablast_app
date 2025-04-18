@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('device_subscriptions', function (Blueprint $table) {
-            $table->id();
             $table->foreignId('device_id')->constrained()->onDelete('cascade');
             $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
+            $table->timestamp('expired_at');
             $table->timestamps();
         });
     }

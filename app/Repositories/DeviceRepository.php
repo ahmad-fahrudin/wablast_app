@@ -22,6 +22,21 @@ class DeviceRepository
 
         return $query->latest()->paginate($perPage);
     }
+    public function getPaginatedSubscribedDevices(int $userId, ?string $search = null, int $perPage = 15)
+    {
+        $query = Device::where('user_id', $userId)
+            ->with('subscription');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('deviceID', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->latest()->paginate($perPage);
+    }
 
     public function create(array $data): Device
     {
@@ -63,5 +78,18 @@ class DeviceRepository
         $baseDeviceId = Str::slug($name, '');
         $randomString = Str::upper(Str::random(4));
         return $baseDeviceId . $randomString;
+    }
+
+    public function getExpiredDevices(int $userId)
+    {
+        return Device::where('user_id', $userId)
+            ->where(function ($query) {
+                $query->whereDoesntHave('subscription')
+                    ->orWhereHas('subscription', function ($q) {
+                        $q->whereNull('expired_at')
+                            ->orWhere('expired_at', '<', now());
+                    });
+            })
+            ->get();
     }
 }

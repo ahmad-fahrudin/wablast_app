@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('subscription_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('subscribe_id')->constrained('subscriptions')->onDelete('cascade');
+            $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
             $table->string('item');
             $table->boolean('is_checklist')->default(true);
             $table->timestamps();

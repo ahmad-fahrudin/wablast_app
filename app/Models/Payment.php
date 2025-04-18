@@ -11,13 +11,11 @@ class Payment extends Model
 
     protected $fillable = [
         'user_id',
-        'subscribe_id',
+        'device_id',
+        'subscription_id',
         'price',
+        'image',
         'status',
-        'is_paid',
-    ];
-    protected $casts = [
-        'is_paid' => 'boolean',
     ];
 
     public function user()
@@ -27,6 +25,11 @@ class Payment extends Model
 
     public function subscription()
     {
-        return $this->belongsTo(Subscription::class, 'subscribe_id');
+        return $this->belongsTo(Subscription::class);
+    }
+
+    public function device()
+    {
+        return $this->belongsTo(Device::class);
     }
 }

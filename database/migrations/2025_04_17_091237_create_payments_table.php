@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('subscribe_id')->constrained('subscriptions')->onDelete('cascade');
+            $table->foreignId('device_id')->constrained('devices')->onDelete('cascade');
+            $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
             $table->decimal('price', 10, 2);
-            $table->string('status')->default('pending');
-            $table->boolean('is_paid')->default(false);
+            $table->string('image')->nullable();
+            $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
             $table->timestamps();
         });
     }

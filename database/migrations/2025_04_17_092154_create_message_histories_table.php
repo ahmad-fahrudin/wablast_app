@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('message_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('subscribe_id')->constrained('subscriptions')->onDelete('cascade');
+            $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
             $table->text('message');
             $table->foreignId('contact_id')->constrained()->onDelete('cascade');
             $table->foreignId('device_id')->constrained()->onDelete('cascade');

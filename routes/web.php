@@ -3,6 +3,7 @@
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\WaBlastController;
 
 Route::get('/', function () {
@@ -22,6 +23,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('devices/{id}/edit', [DeviceController::class, 'edit'])->name('devices.edit');
     Route::put('devices/{id}', [DeviceController::class, 'update'])->name('devices.update');
     Route::get('devices/qr-code/{id}', [DeviceController::class, 'qrCode'])->name('devices.qr-code');
+
+    // Subscription routes
+    Route::get('subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::get('subscriptions/create', [SubscriptionController::class, 'create'])->name('subscriptions.create');
+    Route::post('subscriptions', [SubscriptionController::class, 'store'])->name('subscriptions.store');
+    Route::get('subscriptions/plan', [SubscriptionController::class, 'planList'])->name('subscriptions.plan');
+    Route::get('subscriptions/checkout/{id}', [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
+    Route::post('subscriptions/payment', [SubscriptionController::class, 'payment'])->name('subscriptions.payment');
+    Route::get('subscriptions/invoice', [SubscriptionController::class, 'invoice'])->name('subscriptions.invoice');
+    Route::post('subscriptions/invoice', [SubscriptionController::class, 'updateStatusInvoice'])->name('subscriptions.invoice.status');
 
     // Integrasi WAblast Routes
     Route::get('/generate-qr', [WaBlastController::class, 'generateQR'])->name('blast.generate.qr');

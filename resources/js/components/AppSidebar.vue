@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Folder, LayoutGrid, Album, Users } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -19,6 +19,22 @@ const mainNavItems: NavItem[] = [
         href: '/devices',
         icon: LayoutGrid,
     },
+    {
+        title: 'Payments',
+        icon: Album,
+        children: [
+            {
+                title: 'Subscriptions',
+                href: '/subscriptions',
+                icon: Folder,
+            },
+            {
+                title: 'Invoices',
+                href: '/subscriptions/invoice',
+                icon: Users,
+            }
+        ]
+    }
 ];
 
 const footerNavItems: NavItem[] = [

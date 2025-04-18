@@ -22,26 +22,26 @@ class Subscription extends Model
 
     public function devices()
     {
-        return $this->hasMany(Device::class, 'subscription_id');
+        return $this->hasMany(Device::class);
     }
 
     public function details()
     {
-        return $this->hasMany(SubscriptionDetail::class, 'subscribe_id');
+        return $this->hasMany(SubscriptionDetail::class);
     }
 
     public function messageHistory()
     {
-        return $this->hasMany(MessageHistory::class, 'subscribe_id');
+        return $this->hasMany(MessageHistory::class);
     }
 
-    public function subscriptionUsers()
+    public function subscriptionDevice()
     {
-        return $this->hasMany(SubscriptionUser::class, 'subscribe_id');
+        return $this->hasMany(DeviceSubscription::class);
     }
 
     public function payments()
     {
-        return $this->hasMany(Payment::class, 'subscribe_id');
+        return $this->hasMany(Payment::class);
     }
 }

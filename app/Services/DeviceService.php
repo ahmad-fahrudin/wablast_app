@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Subscription;
+use App\Models\DeviceSubscription;
 use App\Repositories\DeviceRepository;
 use Illuminate\Support\Carbon;
 
@@ -22,6 +23,11 @@ class DeviceService
     public function getPaginatedDevices(int $userId, ?string $search = null, int $perPage = 15)
     {
         return $this->deviceRepository->getPaginatedDevices($userId, $search, $perPage);
+    }
+
+    public function getPaginatedSubscribedDevices(int $userId, ?string $search = null, int $perPage = 15)
+    {
+        return $this->deviceRepository->getPaginatedSubscribedDevices($userId, $search, $perPage);
     }
 
     public function getDeviceById(int $id)
@@ -108,6 +114,40 @@ class DeviceService
 
         return $this->deviceRepository->update($deviceId, [
             'expired_at' => $newExpiryDate
+        ]);
+    }
+
+    public function getExpiredDevices(int $userId)
+    {
+        return $this->deviceRepository->getExpiredDevices($userId);
+    }
+
+    public function activateDeviceSubscription(int $deviceId, int $subscriptionId, int $days): bool
+    {
+        $device = $this->deviceRepository->findById($deviceId);
+        $subscription = Subscription::findOrFail($subscriptionId);
+
+        if (!$device || !$subscription) {
+            return false;
+        }
+
+        $expiryDate = now()->addDays($days);
+
+        DeviceSubscription::updateOrCreate(
+            [
+                'device_id' => $deviceId,
+                'subscription_id' => $subscriptionId,
+            ],
+            [
+                'expired_at' => $expiryDate,
+            ]
+        );
+
+        // Update the device with subscription details
+        return $this->deviceRepository->update($deviceId, [
+            'subscription_id' => $subscriptionId,
+            'limit' => $subscription->limit,
+            'expired_at' => $expiryDate,
         ]);
     }
 }

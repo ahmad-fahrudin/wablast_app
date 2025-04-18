@@ -5,21 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SubscriptionUser extends Model
+class DeviceSubscription extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'device_id',
-        'subscribe_id',
-        'start_date',
-        'end_date',
+        'subscription_id',
+        'expired_at',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-
+        'expired_at' => 'datetime',
     ];
 
     public function device()
@@ -29,6 +26,6 @@ class SubscriptionUser extends Model
 
     public function subscription()
     {
-        return $this->belongsTo(Subscription::class, 'subscribe_id');
+        return $this->belongsTo(Subscription::class);
     }
 }

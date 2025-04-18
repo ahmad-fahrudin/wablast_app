@@ -10,7 +10,7 @@ class MessageHistory extends Model
     use HasFactory;
 
     protected $fillable = [
-        'subscribe_id',
+        'subscription_id',
         'message',
         'contact_id',
         'device_id',
@@ -18,7 +18,7 @@ class MessageHistory extends Model
 
     public function subscription()
     {
-        return $this->belongsTo(Subscription::class, 'subscribe_id');
+        return $this->belongsTo(Subscription::class);
     }
 
     public function contact()

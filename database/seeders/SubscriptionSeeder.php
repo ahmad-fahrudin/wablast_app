@@ -81,7 +81,7 @@ class SubscriptionSeeder extends Seeder
             $detailIndex = 0;
             foreach ($features as $feature => $availability) {
                 SubscriptionDetail::create([
-                    'subscribe_id' => $sub->id,
+                    'subscription_id' => $sub->id,
                     'item' => $feature,
                     'is_checklist' => $availability[$index]
                 ]);
