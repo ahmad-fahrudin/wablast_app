@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('devices', function (Blueprint $table) {
             $table->id();
-            $table->string('device_id')->unique();
+            $table->string('deviceID')->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
+            $table->foreignId('subscription_id')->nullable()->constrained('subscriptions')->onDelete('cascade');
             $table->string('name');
             $table->string('phone');
             $table->integer('limit')->nullable();
             $table->timestamp('expired_at')->nullable();
-            $table->boolean('is_connected')->default(false);
+            $table->boolean('is_connected')->default(0);
             $table->timestamps();
         });
     }

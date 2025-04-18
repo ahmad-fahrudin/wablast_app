@@ -1,0 +1,125 @@
+<script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Head, useForm, Link } from '@inertiajs/vue3';
+import Swal from 'sweetalert2';
+import { SmartphoneIcon } from 'lucide-vue-next';
+
+const breadcrumbs = [
+    {
+        title: 'Devices',
+        href: '/devices',
+    },
+    {
+        title: 'Create',
+        href: '/devices/create',
+    },
+];
+
+const form = useForm({
+  name: '',
+  phone: '',
+});
+
+function submit() {
+  form.post(route('devices.store'), {
+    onSuccess: () => {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        icon: 'success',
+        title: 'Device created successfully'
+      })
+    },
+    onError: () => {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        icon: 'error',
+        title: 'Failed to create device'
+      });
+    },
+  });
+}
+</script>
+
+<template>
+  <Head title="Create Device" />
+
+  <AppLayout :breadcrumbs="breadcrumbs">
+    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+      <div class="flex justify-between items-center mb-2">
+        <h1 class="text-2xl font-bold">Create New Device</h1>
+      </div>
+
+      <Card class="overflow-hidden border-gray-200 dark:border-gray-800">
+        <form @submit.prevent="submit">
+          <CardContent class="p-6">
+            <div class="grid gap-6">
+              <!-- Device Information -->
+              <div class="space-y-4">
+                <h3 class="text-md font-medium flex items-center gap-2">
+                  Device Information
+                </h3>
+
+                <div class="space-y-2">
+                  <Label for="name" class="font-medium">Device Name</Label>
+                  <Input
+                    id="name"
+                    v-model="form.name"
+                    type="text"
+                    placeholder="Enter device name"
+                    :error="form.errors.name"
+                    required
+                    class="bg-white dark:bg-gray-900"
+                  />
+                  <p v-if="form.errors.name" class="text-sm text-red-500">{{ form.errors.name }}</p>
+                </div>
+
+                <div class="space-y-2">
+                  <Label for="phone" class="font-medium">Phone Number</Label>
+                  <div class="flex items-center">
+                    <SmartphoneIcon class="h-4 w-4 mr-2 text-gray-400" />
+                    <Input
+                      id="phone"
+                      v-model="form.phone"
+                      type="text"
+                      placeholder="Enter phone number (with country code)"
+                      :error="form.errors.phone"
+                      required
+                      class="bg-white dark:bg-gray-900"
+                    />
+                  </div>
+                  <p v-if="form.errors.phone" class="text-sm text-red-500">{{ form.errors.phone }}</p>
+                  <p class="text-xs text-gray-500">Example: 628123456789 (without + or spaces)</p>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Other device settings such as subscription, limits, and expiration will be handled by the system automatically.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+
+        <CardFooter class="flex justify-between">
+            <Link :href="route('devices.index')">
+                <Button type="button" variant="outline">Cancel</Button>
+            </Link>
+            <Button type="submit" :disabled="form.processing">Create Device</Button>
+        </CardFooter>
+        </form>
+      </Card>
+    </div>
+  </AppLayout>
+</template>
