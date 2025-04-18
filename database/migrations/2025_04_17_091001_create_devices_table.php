@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('subscription_id')->nullable()->constrained('subscriptions')->onDelete('cascade');
             $table->string('name');
             $table->string('phone');
-            $table->integer('limit')->nullable();
+            $table->integer('quota')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->boolean('is_connected')->default(0);
             $table->timestamps();

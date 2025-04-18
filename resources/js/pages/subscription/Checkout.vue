@@ -157,8 +157,8 @@ const processPayment = () => {
                 <h3 class="text-lg font-medium text-foreground mb-4">Plan Details</h3>
                 <div class="space-y-3">
                   <div class="flex justify-between pb-2 border-b border-border">
-                    <span class="text-muted-foreground">Message Limit</span>
-                    <span class="font-medium text-foreground">{{ formatNumber(plan.limit) }}</span>
+                    <span class="text-muted-foreground">Message Quota</span>
+                    <span class="font-medium text-foreground">{{ formatNumber(plan.quota) }}</span>
                   </div>
                   <div class="flex justify-between pb-2 border-b border-border">
                     <span class="text-muted-foreground">Plan</span>

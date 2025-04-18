@@ -5,33 +5,49 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Folder, LayoutGrid, Album, Users } from 'lucide-vue-next';
+import { NotebookText, ShoppingCart, House , MonitorSmartphone, CreditCard, Contact, BookUser, Album  } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
-        icon: LayoutGrid,
+        icon: House,
     },
     {
         title: 'Devices',
         href: '/devices',
-        icon: LayoutGrid,
+        icon: MonitorSmartphone,
+    },
+    {
+        title: 'Phonebook',
+        icon: Album,
+        children: [
+            {
+                title: 'Contact',
+                href: '/subscriptions',
+                icon: Contact,
+            },
+            {
+                title: 'Group',
+                href: '/subscriptions/invoice',
+                icon: BookUser,
+            }
+        ]
     },
     {
         title: 'Payments',
-        icon: Album,
+        icon: CreditCard,
         children: [
             {
                 title: 'Subscriptions',
                 href: '/subscriptions',
-                icon: Folder,
+                icon: ShoppingCart,
             },
             {
                 title: 'Invoices',
                 href: '/subscriptions/invoice',
-                icon: Users,
+                icon: NotebookText,
             }
         ]
     }

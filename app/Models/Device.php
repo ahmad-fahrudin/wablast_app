@@ -15,7 +15,7 @@ class Device extends Model
         'deviceID',
         'name',
         'phone',
-        'limit',
+        'quota',
         'expired_at',
         'is_connected',
     ];

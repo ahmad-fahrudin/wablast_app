@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('price', 10, 2);
-            $table->integer('limit');
+            $table->integer('quota');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

@@ -171,11 +171,14 @@ function approvePayment() {
         status: 'completed'
       }, {
         onSuccess: () => {
-          Swal.fire(
-            'Berhasil!',
-            'Pembayaran telah disetujui.',
-            'success'
-          );
+          Swal.fire({
+            title: 'Berhasil!',
+            text: 'Pembayaran telah disetujui.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+          }).then(() => {
+            router.visit(route('subscriptions.invoice'));
+          });
           showApprovalMenu.value = false;
         }
       });
@@ -203,11 +206,14 @@ function rejectPayment() {
         status: 'failed'
       }, {
         onSuccess: () => {
-          Swal.fire(
-            'Berhasil!',
-            'Pembayaran telah ditolak.',
-            'success'
-          );
+          Swal.fire({
+            title: 'Berhasil!',
+            text: 'Pembayaran telah ditolak.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+          }).then(() => {
+            router.visit(route('subscriptions.invoice'));
+          });
           showApprovalMenu.value = false;
         }
       });
@@ -287,25 +293,20 @@ function toggleApprovalMenu() {
                                     </div>
                                 </td>
                                 <td class="px-4 py-2 whitespace-nowrap">
-                                    <div class="flex space-x-2">
+                                    <div class="flex items-center gap-2">
                                         <button
                                             @click="viewInvoiceDetails(payment)"
-                                            class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-input bg-background p-0 hover:bg-accent hover:text-accent-foreground relative group"
+                                            class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                             title="View Invoice Details">
-                                            <EyeIcon class="h-3.5 w-3.5" />
-                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                                                View Details
-                                            </span>
+                                            <EyeIcon class="h-3 w-3 mr-1" />
+                                            Details
                                         </button>
-                                        <!-- <Link
-                                            href="#"
-                                            class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-input bg-background p-0 hover:bg-accent hover:text-accent-foreground relative group"
+                                        <!-- <button
+                                            class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                             title="Download Invoice">
-                                            <DownloadIcon class="h-3.5 w-3.5" />
-                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                                                Download Invoice
-                                            </span>
-                                        </Link> -->
+                                            <DownloadIcon class="h-3 w-3 mr-1" />
+                                            Download
+                                        </button> -->
                                     </div>
                                 </td>
                             </tr>
@@ -452,8 +453,8 @@ function toggleApprovalMenu() {
                                     <span class="font-medium">{{ selectedPayment?.subscription?.name || '-' }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Message Limit</span>
-                                    <span class="font-medium">{{ selectedPayment?.subscription?.limit.toLocaleString() || '-' }} messages</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Message Quota</span>
+                                    <span class="font-medium">{{ selectedPayment?.subscription?.quota.toLocaleString() || '-' }} messages</span>
                                 </div>
                                 <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
                                 <div class="flex justify-between items-center">

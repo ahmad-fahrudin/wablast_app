@@ -105,7 +105,7 @@ function handleScanQrCode(device) {
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Device ID</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subscription</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Limit</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quota</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Expires On</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Actions</th>
@@ -129,7 +129,7 @@ function handleScanQrCode(device) {
                                     </span>
                                     <span v-else class="text-gray-400">-</span>
                                 </td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm">{{ device.limit }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm">{{ device.quota }}</td>
                                 <td class="px-4 py-2 whitespace-nowrap text-sm">{{ formatDate(device.expired_at) }}</td>
                                 <td class="px-4 py-2 whitespace-nowrap text-sm">
                                     <div class="flex items-center">
@@ -149,23 +149,20 @@ function handleScanQrCode(device) {
                                     </div>
                                 </td>
                                 <td class="px-4 py-2 whitespace-nowrap">
-                                    <div class="flex space-x-2">
+                                    <div class="flex items-center gap-2">
                                         <button v-if="!device.is_connected"
                                             @click="handleScanQrCode(device)"
-                                            class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-input bg-background p-0 hover:bg-accent hover:text-accent-foreground relative group"
+                                            class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                             title="Scan QR Code">
-                                            <ScanQrCode class="h-3.5 w-3.5" />
-                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                                                Scan QR Code
-                                            </span>
+                                            <ScanQrCode class="h-3 w-3 mr-1" />
+                                            Scan QR
                                         </button>
-                                        <Link :href="route('devices.edit', device.id)"
-                                            class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-input bg-background p-0 hover:bg-accent hover:text-accent-foreground relative group"
+                                        <Link
+                                            :href="route('devices.edit', device.id)"
+                                            class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                             title="Settings">
-                                            <Settings class="h-3.5 w-3.5" />
-                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                                                Settings
-                                            </span>
+                                            <Settings class="h-3 w-3 mr-1" />
+                                            Settings
                                         </Link>
                                     </div>
                                 </td>

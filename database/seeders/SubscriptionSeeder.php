@@ -19,38 +19,38 @@ class SubscriptionSeeder extends Seeder
             [
                 'name' => 'Free',
                 'price' => 0,
-                'limit' => 100,
+                'quota' => 100,
                 'is_active' => true
             ],
             [
                 'name' => 'Small',
                 'price' => 50000,
-                'limit' => 1000,
+                'quota' => 1000,
                 'is_active' => true
             ],
             [
                 'name' => 'Medium',
                 'price' => 120000,
-                'limit' => 5000,
+                'quota' => 5000,
                 'is_active' => true
             ],
             [
                 'name' => 'Large',
                 'price' => 250000,
-                'limit' => 15000,
+                'quota' => 15000,
                 'is_active' => true
             ],
             [
                 'name' => 'Enterprise',
                 'price' => 500000,
-                'limit' => 50000,
+                'quota' => 50000,
                 'is_active' => true
             ],
         ];
 
         // Define all possible features
         $allFeatures = [
-            'Unlimited Device Connection' => [false, false, true, true, true],
+            'Unquotaed Device Connection' => [false, false, true, true, true],
             'Auto Reply Messages' => [false, true, true, true, true],
             'Bulk Messaging' => [false, true, true, true, true],
             'Contact Management' => [true, true, true, true, true],

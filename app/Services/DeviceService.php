@@ -46,7 +46,7 @@ class DeviceService
             'deviceID' => $deviceId,
             'name' => $name,
             'phone' => $phone,
-            'limit' => $subscription->limit,
+            'quota' => $subscription->quota,
             'expired_at' => now()->addDays($trialDays),
             'is_connected' => false,
         ]);
@@ -69,7 +69,7 @@ class DeviceService
             'deviceID' => $deviceId,
             'name' => $name,
             'phone' => $phone,
-            'limit' => null,
+            'quota' => null,
             'expired_at' => null,
             'is_connected' => false,
         ]);
@@ -146,7 +146,7 @@ class DeviceService
         // Update the device with subscription details
         return $this->deviceRepository->update($deviceId, [
             'subscription_id' => $subscriptionId,
-            'limit' => $subscription->limit,
+            'quota' => $subscription->quota,
             'expired_at' => $expiryDate,
         ]);
     }

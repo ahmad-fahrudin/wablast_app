@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, PhoneIcon, WifiIcon, WifiOffIcon, Settings, ScanQrCode, AlignJustify  } from 'lucide-vue-next';
+import { PlusIcon, SearchIcon, ShoppingCart, RefreshCwIcon } from 'lucide-vue-next';
 import Swal from 'sweetalert2';
 import { ref, watch } from 'vue';
 import debounce from 'lodash/debounce';
@@ -103,11 +103,9 @@ function handleScanQrCode(device) {
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">No.</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Device ID</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subscription</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Limit</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quota</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Expires On</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Actions</th>
                             </tr>
                         </thead>
@@ -117,55 +115,31 @@ function handleScanQrCode(device) {
                                 <td class="px-4 py-2 whitespace-nowrap text-sm">{{ device.name }}</td>
                                 <td class="px-4 py-2 whitespace-nowrap text-sm font-mono">{{ device.deviceID }}</td>
                                 <td class="px-4 py-2 whitespace-nowrap text-sm">
-                                    <div class="flex items-center gap-1.5">
-                                        <PhoneIcon class="h-3.5 w-3.5 text-gray-500" />
-                                        {{ device.phone }}
-                                    </div>
-                                </td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm">
                                     <span v-if="device.subscription"
                                           class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                                         {{ device.subscription.name }}
                                     </span>
                                     <span v-else class="text-gray-400">-</span>
                                 </td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm">{{ device.limit }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm">{{ device.quota }}</td>
                                 <td class="px-4 py-2 whitespace-nowrap text-sm">{{ formatDate(device.expired_at) }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm">
-                                    <div class="flex items-center">
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium"
-                                            :class="device.is_connected ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'"
-                                        >
-                                            <span v-if="device.is_connected">
-                                                <WifiIcon class="h-3 w-3" />
-                                                Connected
-                                            </span>
-                                            <span v-else>
-                                                <WifiOffIcon class="h-3 w-3" />
-                                                Disconnected
-                                            </span>
-                                        </span>
-                                    </div>
-                                </td>
                                 <td class="px-4 py-2 whitespace-nowrap">
-                                    <div class="flex space-x-2">
-                                        <button v-if="!device.is_connected"
-                                            @click="handleScanQrCode(device)"
-                                            class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-input bg-background p-0 hover:bg-accent hover:text-accent-foreground relative group"
-                                            title="Scan QR Code">
-                                            <ScanQrCode class="h-3.5 w-3.5" />
-                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                                                Scan QR Code
-                                            </span>
-                                        </button>
-                                        <Link :href="route('devices.edit', device.id)"
-                                            class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-input bg-background p-0 hover:bg-accent hover:text-accent-foreground relative group"
-                                            title="Settings">
-                                            <Settings class="h-3.5 w-3.5" />
-                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                                                Settings
-                                            </span>
+                                    <div class="flex items-center gap-2">
+                                        <Link
+                                            v-if="!device.subscription"
+                                            :href="route('subscriptions.plan', { device_id: device.id })"
+                                            class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                        >
+                                            <PlusIcon class="h-3 w-3 mr-1" />
+                                            Add
+                                        </Link>
+                                        <Link
+                                            v-else
+                                            :href="route('subscriptions.plan', { device_id: device.id })"
+                                            class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                        >
+                                            <RefreshCwIcon class="h-3 w-3 mr-1" />
+                                            Renew
                                         </Link>
                                     </div>
                                 </td>

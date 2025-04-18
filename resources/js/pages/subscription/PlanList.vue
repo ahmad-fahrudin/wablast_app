@@ -65,7 +65,7 @@ const buyPlan = (plan) => {
                 <span class="text-sm font-normal text-muted-foreground">/month</span>
               </p>
               <p class="text-sm text-muted-foreground">
-                <span class="font-medium">Message Limit:</span> {{ formatNumber(plan.limit) }}
+                <span class="font-medium">Message Quota:</span> {{ formatNumber(plan.quota) }}
               </p>
             </div>
 
@@ -125,7 +125,7 @@ const buyPlan = (plan) => {
               <span class="text-sm font-normal text-muted-foreground">/month</span>
             </p>
             <p class="text-sm text-foreground mt-2">
-              <span class="font-medium">Message Limit:</span> {{ formatNumber(selectedPlan.limit) }}
+              <span class="font-medium">Message Quota:</span> {{ formatNumber(selectedPlan.quota) }}
             </p>
           </div>
 

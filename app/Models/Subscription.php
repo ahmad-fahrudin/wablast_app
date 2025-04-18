@@ -12,7 +12,7 @@ class Subscription extends Model
     protected $fillable = [
         'name',
         'price',
-        'limit',
+        'quota',
         'is_active',
     ];
 
