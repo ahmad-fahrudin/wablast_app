@@ -26,6 +26,11 @@ class ContactRepository
         return Contact::find($id);
     }
 
+    public function getAllContacts()
+    {
+        return Contact::all();
+    }
+
     public function createContact(array $data): Contact
     {
         return Contact::create($data);

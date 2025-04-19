@@ -23,6 +23,11 @@ class GroupRepository
         return $query->latest()->paginate($perPage);
     }
 
+    public function getAllGroups()
+    {
+        return Group::all();
+    }
+
     public function getGroupById($id)
     {
         return Group::with('contacts')->findOrFail($id);

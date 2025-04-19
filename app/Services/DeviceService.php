@@ -25,6 +25,11 @@ class DeviceService
         return $this->deviceRepository->getPaginatedDevices($userId, $search, $perPage);
     }
 
+    public function getAllDevices()
+    {
+        return $this->deviceRepository->getAllDevices();
+    }
+
     public function getPaginatedSubscribedDevices(int $userId, ?string $search = null, int $perPage = 15)
     {
         return $this->deviceRepository->getPaginatedSubscribedDevices($userId, $search, $perPage);

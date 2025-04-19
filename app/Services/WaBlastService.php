@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Device;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use App\Models\Contact;
+use App\Models\MessageHistory;
 use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Exception\GuzzleException;
 
 class WaBlastService
 {
@@ -201,6 +203,249 @@ class WaBlastService
             return [
                 'success' => false,
                 'message' => 'Error checking devices: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function sendMessage(string $deviceId, string $to, string $message): array
+    {
+        try {
+            $tokenResult = $this->getAuthToken();
+            if (isset($tokenResult['error'])) {
+                return $tokenResult;
+            }
+
+            $response = $this->client->post($this->apiBaseUrl . '/send', [
+                'json' => [
+                    'deviceId' => $deviceId,
+                    'to' => $to,
+                    'message' => $message
+                ],
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenResult
+                ]
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $result = json_decode($body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("Failed to parse JSON response: " . json_last_error_msg());
+                return ['error' => 'Invalid response format', 'raw_response' => $body];
+            }
+
+            // Create message history record
+            $this->logMessageHistory($deviceId, $to, $message, $result);
+
+            return $result;
+        } catch (GuzzleException $e) {
+            Log::error('Error sending message: ' . $e->getMessage());
+            return [
+                'error' => 'Failed to send message: ' . $e->getMessage(),
+                'success' => false
+            ];
+        }
+    }
+
+    public function sendBulkMessage(string $deviceId, array $recipients, string $message): array
+    {
+        $results = [];
+        foreach ($recipients as $recipient) {
+            $results[$recipient] = $this->sendMessage($deviceId, $recipient, $message);
+        }
+        return $results;
+    }
+
+    public function sendMedia(string $deviceId, string $to, string $caption, $media = null): array
+    {
+        try {
+            $tokenResult = $this->getAuthToken();
+            if (isset($tokenResult['error'])) {
+                return $tokenResult;
+            }
+
+            $multipart = [
+                [
+                    'name' => 'deviceId',
+                    'contents' => $deviceId
+                ],
+                [
+                    'name' => 'to',
+                    'contents' => $to
+                ],
+                [
+                    'name' => 'caption',
+                    'contents' => $caption
+                ],
+            ];
+
+            // Add media file if provided
+            if ($media !== null) {
+                $multipart[] = [
+                    'name' => 'media',
+                    'contents' => $media,
+                    'filename' => 'media'
+                ];
+            }
+
+            $response = $this->client->post($this->apiBaseUrl . '/send-media', [
+                'multipart' => $multipart,
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenResult
+                ]
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $result = json_decode($body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("Failed to parse JSON response: " . json_last_error_msg());
+                return ['error' => 'Invalid response format', 'raw_response' => $body];
+            }
+
+            // Create message history record with media tag
+            $this->logMessageHistory($deviceId, $to, $caption . ' [Media Message]', $result);
+
+            return $result;
+        } catch (GuzzleException $e) {
+            Log::error('Error sending media: ' . $e->getMessage());
+            return [
+                'error' => 'Failed to send media: ' . $e->getMessage(),
+                'success' => false
+            ];
+        }
+    }
+
+    private function logMessageHistory(string $deviceId, string $recipient, string $content, array $response): void
+    {
+        try {
+            $device = Device::where('deviceID', $deviceId)->first();
+            if (!$device) {
+                Log::error("Device not found with ID: {$deviceId}");
+                return;
+            }
+
+            // Check if there's a contact record for this recipient
+            $contactId = null;
+            $contact = Contact::where('phone', $recipient)->first();
+            if ($contact) {
+                $contactId = $contact->id;
+            }
+
+            MessageHistory::create([
+                'subscription_id' => $device->subscription_id,
+                'device_id' => $device->id,
+                'contact_id' => $contactId,
+                'message' => $content,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to log message history: ' . $e->getMessage());
+        }
+    }
+
+    public function sendMessageToGroup(string $deviceId, string $groupId, string $message): array
+    {
+        try {
+            $tokenResult = $this->getAuthToken();
+            if (isset($tokenResult['error'])) {
+                return $tokenResult;
+            }
+
+            $response = $this->client->post($this->apiBaseUrl . '/groups/send', [
+                'json' => [
+                    'deviceId' => $deviceId,
+                    'groupId' => $groupId,
+                    'message' => $message
+                ],
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenResult
+                ]
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $result = json_decode($body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("Failed to parse JSON response: " . json_last_error_msg());
+                return ['error' => 'Invalid response format', 'raw_response' => $body];
+            }
+
+            // Create message history record for group message
+            $this->logMessageHistory($deviceId, "group-" . $groupId, $message, $result);
+
+            return $result;
+        } catch (GuzzleException $e) {
+            Log::error('Error sending message to group: ' . $e->getMessage());
+            return [
+                'error' => 'Failed to send message to group: ' . $e->getMessage(),
+                'success' => false
+            ];
+        }
+    }
+
+
+    public function sendMediaToGroup(string $deviceId, string $groupId, string $caption, $media = null): array
+    {
+        try {
+            $tokenResult = $this->getAuthToken();
+            if (isset($tokenResult['error'])) {
+                return $tokenResult;
+            }
+
+            $multipart = [
+                [
+                    'name' => 'deviceId',
+                    'contents' => $deviceId
+                ],
+                [
+                    'name' => 'groupId',
+                    'contents' => $groupId
+                ],
+                [
+                    'name' => 'caption',
+                    'contents' => $caption
+                ],
+            ];
+
+            // Add media file if provided
+            if ($media !== null) {
+                $multipart[] = [
+                    'name' => 'media',
+                    'contents' => $media,
+                    'filename' => 'media'
+                ];
+            }
+
+            $response = $this->client->post($this->apiBaseUrl . '/groups/send-media', [
+                'multipart' => $multipart,
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenResult
+                ]
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $result = json_decode($body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("Failed to parse JSON response: " . json_last_error_msg());
+                return ['error' => 'Invalid response format', 'raw_response' => $body];
+            }
+
+            // Create message history record for group media message
+            $this->logMessageHistory($deviceId, "group-" . $groupId, $caption . ' [Media Message to Group]', $result);
+
+            return $result;
+        } catch (GuzzleException $e) {
+            Log::error('Error sending media to group: ' . $e->getMessage());
+            return [
+                'error' => 'Failed to send media to group: ' . $e->getMessage(),
+                'success' => false
             ];
         }
     }

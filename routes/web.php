@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\WaBlastController;
 use App\Http\Controllers\SubscriptionController;
 
@@ -56,6 +57,23 @@ Route::middleware(['auth'])->group(function () {
     // Integrasi WAblast Routes
     Route::get('/generate-qr', [WaBlastController::class, 'generateQR'])->name('blast.generate.qr');
     Route::get('/device-check', [WaBlastController::class, 'checkDeviceStatus'])->name('blast.device.check');
+    Route::get('/send-message', [WaBlastController::class, 'sendMessage'])->name('blast.send.message');
+    Route::get('/send-bulk-message', [WaBlastController::class, 'sendBulkMessage'])->name('blast.send.bulk.message');
+
+    // Message routes
+    Route::get('message-page', [MessageController::class, 'messagePage'])->name('messages.page');
+    Route::get('media-page', [MessageController::class, 'mediaPage'])->name('media.page');
+
+    // API routes for authenticated users
+    Route::prefix('api')->group(function () {
+        // Contact routes
+        Route::get('/contacts', [ContactController::class, 'getContactsForSelector']);
+
+        // Message routes
+        Route::post('/messages/send', [MessageController::class, 'sendTextMessage']);
+        Route::post('/messages/send-media', [MessageController::class, 'sendMediaMessage']);
+    });
 });
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

@@ -20,6 +20,11 @@ class GroupService
         return $this->groupRepository->getPaginatedGroups($userId, $search, $perPage);
     }
 
+    public function getAllGroups()
+    {
+        return $this->groupRepository->getAllGroups();
+    }
+
     public function getGroupById($id)
     {
         return $this->groupRepository->getGroupById($id);

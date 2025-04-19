@@ -41,12 +41,12 @@ const mainNavItems: NavItem[] = [
         children: [
             {
                 title: 'New Message',
-                href: '/message/new',
+                href: '/message-page',
                 icon: FileText,
             },
             {
-                title: 'Schedule',
-                href: '/message/schedule',
+                title: 'New Media Message',
+                href: '/media-page',
                 icon: Calendar,
             },
             {

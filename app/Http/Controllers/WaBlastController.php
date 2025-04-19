@@ -62,4 +62,58 @@ class WaBlastController extends Controller
             ], 500);
         }
     }
+
+    public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'deviceId' => 'required|string',
+            'to' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        try {
+            $result = $this->waBlastService->sendMessage(
+                $request->deviceId,
+                $request->to,
+                $request->message
+            );
+
+            return response()->json($result);
+        } catch (Exception $e) {
+            Log::error('Error sending message: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error sending message: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function sendBulkMessage(Request $request)
+    {
+        $request->validate([
+            'deviceId' => 'required|string',
+            'recipients' => 'required|array',
+            'recipients.*' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        try {
+            $result = $this->waBlastService->sendBulkMessage(
+                $request->deviceId,
+                $request->recipients,
+                $request->message
+            );
+
+            return response()->json([
+                'success' => true,
+                'results' => $result
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error sending bulk messages: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error sending bulk messages: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -22,6 +22,11 @@ class DeviceRepository
 
         return $query->latest()->paginate($perPage);
     }
+
+    public function getAllDevices()
+    {
+        return Device::all();
+    }
     public function getPaginatedSubscribedDevices(int $userId, ?string $search = null, int $perPage = 15)
     {
         $query = Device::where('user_id', $userId)

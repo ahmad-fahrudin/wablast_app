@@ -19,6 +19,11 @@ class ContactService
         return $this->contactRepository->getPaginatedContacts($userId, $search, $perPage);
     }
 
+    public function getAllContacts()
+    {
+        return $this->contactRepository->getAllContacts();
+    }
+
     public function getContactById($id)
     {
         return $this->contactRepository->getContactById($id);

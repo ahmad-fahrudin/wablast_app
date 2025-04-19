@@ -33,6 +33,23 @@ class ContactController extends Controller
         ]);
     }
 
+    /**
+     * API endpoint to get paginated contacts for selector
+     */
+    public function getContactsForSelector(Request $request)
+    {
+        $search = $request->input('search');
+        $perPage = $request->input('perPage', 10);
+
+        $contacts = $this->contactService->getPaginatedContacts(
+            auth()->id(),
+            $search,
+            $perPage
+        );
+
+        return response()->json($contacts);
+    }
+
     public function create()
     {
         return Inertia::render('contact/Create');
