@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea, Badge, Pagination } from '@/components/ui';
 import { type BreadcrumbItem } from '@/types';
 import axios from 'axios';
-import { XIcon, SearchIcon } from 'lucide-vue-next';
+import { XIcon, SearchIcon, PlusIcon } from 'lucide-vue-next';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
   devices: Array,
@@ -26,6 +27,9 @@ const contactsPerPage = ref(10);
 const paginatedContacts = ref([]);
 const totalContacts = ref(0);
 const isLoading = ref(false);
+const manualPhone = ref('');
+const manualName = ref('');
+const saveManualContact = ref(true); // Default to save the contact
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -163,6 +167,111 @@ function addContact(contactId, contactObject = null) {
   }
 }
 
+// Add a manual contact (phone number) to the selected contacts
+function addManualContact() {
+  if (!manualPhone.value.trim()) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Please enter a phone number',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Basic validation for phone number - should be numeric and have at least 10 digits
+  const phoneRegex = /^\d{10,15}$/;
+  if (!phoneRegex.test(manualPhone.value.replace(/\D/g, ''))) {
+    Swal.fire({
+      title: 'Invalid Phone Number',
+      text: 'Please enter a valid phone number (10-15 digits)',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Standardize phone number format
+  let phoneNumber = manualPhone.value.replace(/\D/g, '');
+  
+  // Use provided name or generate a display name from the phone number if none provided
+  const displayName = manualName.value.trim() || phoneNumber;
+
+  // Check if the number already exists in contacts
+  let existingContact = null;
+  if (props.contacts && Array.isArray(props.contacts)) {
+    existingContact = props.contacts.find(c => c.phone && c.phone.replace(/\D/g, '') === phoneNumber);
+  }
+
+  if (existingContact) {
+    // If it exists in our contacts, use that contact object
+    addContact(existingContact.id, existingContact);
+    
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      icon: 'info',
+      title: 'Contact already exists in your contacts'
+    });
+  } else {
+    // Create a new contact object with the phone number
+    const newContact = {
+      id: 'manual-' + Date.now(), // Use a temporary ID with timestamp
+      name: displayName,
+      phone: phoneNumber,
+      isManual: true, // Flag to identify manually added contacts
+      shouldSave: saveManualContact.value // Flag to indicate if we should save this as a new contact
+    };
+    form.contacts.push(newContact);
+    
+    // If the user wants to save this as a new contact, create it in the database
+    if (saveManualContact.value) {
+      axios.post('/contacts', {
+        name: displayName,
+        phone: phoneNumber
+      }).then(response => {
+        // Update the temporary contact with the real contact ID
+        const index = form.contacts.findIndex(c => 
+          typeof c === 'object' && c.isManual && c.phone === phoneNumber
+        );
+        
+        if (index !== -1 && response.data.contact) {
+          // Replace the manual contact with the saved one
+          form.contacts[index] = response.data.contact;
+          
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            icon: 'success',
+            title: 'New contact created successfully'
+          });
+        }
+      }).catch(error => {
+        console.error('Error creating contact:', error);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+          icon: 'error',
+          title: 'Failed to create contact'
+        });
+      });
+    }
+  }
+
+  // Clear the input fields
+  manualPhone.value = '';
+  manualName.value = '';
+}
+
 function removeContact(contactId) {
   const index = form.contacts.findIndex(c =>
     typeof c === 'object' ? c.id === contactId : c === contactId
@@ -192,7 +301,12 @@ const selectedBroadcastGroups = computed(() => {
 });
 
 const selectedWhatsappGroups = computed(() => {
-  return whatsappGroupOptions.value.filter(group => form.groups.includes(group.id));
+  // Get existing WhatsApp groups
+  const existingGroups = whatsappGroupOptions.value.filter(group =>
+    form.groups.includes(group.id)
+  );
+
+  return existingGroups;
 });
 
 const sendMessage = async () => {
@@ -227,6 +341,12 @@ const sendMessage = async () => {
   }
 
   if (!isValid) {
+    Swal.fire({
+      title: 'Validation Error',
+      text: 'Please check the form for errors',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
     return;
   }
 
@@ -235,28 +355,90 @@ const sendMessage = async () => {
   successMessage.value = '';
 
   try {
+    // Prepare recipients based on type
+    let recipients;
+    if (form.recipientType === 'contact') {
+      // For manual contacts, we need to handle them differently
+      recipients = form.contacts.map(contact => {
+        if (typeof contact === 'object') {
+          if (contact.isManual) {
+            // For manually added contacts, use the phone number directly
+            return { id: contact.id, phone: contact.phone };
+          }
+          return contact.id;
+        }
+        return contact;
+      });
+    } else {
+      recipients = form.groups;
+    }
+
     const payload = {
       deviceId: form.deviceId,
       recipientType: form.recipientType,
-      recipients: form.recipientType === 'contact'
-        ? form.contacts.map(contact => typeof contact === 'object' ? contact.id : contact)
-        : form.groups.map(group => typeof group === 'object' ? group.id : group),
+      recipients: recipients,
       message: form.message
     };
 
     const response = await axios.post('/api/messages/send', payload);
 
     if (response.data.success) {
-      successMessage.value = response.data.message;
+      Swal.fire({
+        title: 'Success!',
+        text: response.data.message || 'Message sent successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
       // Reset form values
       form.message = '';
       form.contacts = [];
       form.groups = [];
+    } else if (response.data.quotaExhausted) {
+      // Handle quota exhaustion
+      Swal.fire({
+        title: 'Quota Exhausted',
+        text: 'Your message quota has been exhausted. Would you like to purchase more?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Go to Subscription',
+        cancelButtonText: 'Not Now'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.visit('/subscriptions');
+        }
+      });
     } else {
-      errorMessage.value = response.data.message || 'Failed to send message';
+      Swal.fire({
+        title: 'Error',
+        text: response.data.message || 'Failed to send message',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'An error occurred while sending the message';
+    // Check if this is a quota exhaustion error
+    if (error.response?.data?.quotaExhausted) {
+      Swal.fire({
+        title: 'Quota Exhausted',
+        text: 'Your message quota has been exhausted. Would you like to purchase more?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Go to Subscription',
+        cancelButtonText: 'Not Now'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.visit('/subscriptions');
+        }
+      });
+    } else {
+      Swal.fire({
+        title: 'Error',
+        text: error.response?.data?.message || 'An error occurred while sending the message',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
     console.error('Error sending message:', error);
   } finally {
     form.processing = false;
@@ -349,14 +531,61 @@ const sendMessage = async () => {
             <div v-if="form.recipientType === 'contact'">
               <div class="flex justify-between items-center">
                 <Label>Contacts</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  @click="showContactSelector = !showContactSelector"
-                >
-                  {{ showContactSelector ? 'Hide' : 'Show' }} Contact Selector
-                </Button>
+                <div class="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="showContactSelector = !showContactSelector"
+                  >
+                    {{ showContactSelector ? 'Hide' : 'Show' }} Contact Selector
+                  </Button>
+                </div>
+              </div>
+
+              <!-- Manual Contact Input -->
+              <div class="mt-3">
+                <div class="flex items-end gap-2 mb-2">
+                  <div class="flex-1">
+                    <Label for="manualName">Contact Name</Label>
+                    <Input
+                      id="manualName"
+                      v-model="manualName"
+                      type="text"
+                      placeholder="Enter contact name"
+                      class="mt-1"
+                    />
+                  </div>
+                  <div class="flex-1">
+                    <Label for="manualPhone">Phone Number</Label>
+                    <Input
+                      id="manualPhone"
+                      v-model="manualPhone"
+                      type="text"
+                      placeholder="Enter phone number (e.g., 62812345678)"
+                      class="mt-1"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    @click="addManualContact"
+                    class="mb-0.5"
+                  >
+                    <PlusIcon class="h-4 w-4 mr-1" />
+                    Add
+                  </Button>
+                </div>
+                <div class="flex items-center mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  <input
+                    type="checkbox"
+                    id="saveContact"
+                    v-model="saveManualContact"
+                    class="mr-2"
+                  />
+                  <Label for="saveContact" class="cursor-pointer">Save as a new contact</Label>
+                </div>
               </div>
 
               <!-- Contact Selector with Pagination -->
@@ -491,7 +720,10 @@ const sendMessage = async () => {
 
             <!-- WhatsApp Groups Selection -->
             <div v-if="form.recipientType === 'group'">
-              <Label>Select WhatsApp Groups</Label>
+              <div>
+                <Label>Select WhatsApp Groups</Label>
+              </div>
+
               <div v-if="whatsappGroupOptions.length === 0" class="mt-2 text-gray-500">
                 No WhatsApp groups available
               </div>

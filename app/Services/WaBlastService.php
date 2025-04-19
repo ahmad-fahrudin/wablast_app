@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\Device;
 use GuzzleHttp\Client;
-use App\Models\Contact;
-use App\Models\MessageHistory;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Exception\GuzzleException;
 
@@ -54,6 +52,9 @@ class WaBlastService
     {
         try {
             $tokenResult = $this->getAuthToken();
+            if (isset($tokenResult['error'])) {
+                return $tokenResult;
+            }
 
             $response = $this->client->post($this->apiBaseUrl . '/connect', [
                 'json' => [
@@ -67,8 +68,8 @@ class WaBlastService
             ]);
 
             $body = $response->getBody()->getContents();
-
             $result = json_decode($body, true);
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error("Failed to parse JSON: " . json_last_error_msg());
                 return ['error' => $body];
@@ -84,7 +85,7 @@ class WaBlastService
     public function getQrCode(string $deviceId)
     {
         $tokenResult = $this->getAuthToken();
-        if (!$tokenResult) {
+        if (isset($tokenResult['error'])) {
             return $tokenResult;
         }
 
@@ -103,13 +104,12 @@ class WaBlastService
             if (strpos($contentType, 'image/png') !== false) {
                 $imageData = $response->getBody()->getContents();
                 $base64Image = base64_encode($imageData);
-
                 return $base64Image;
             }
 
             $body = $response->getBody()->getContents();
-
             $result = json_decode($body, true);
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return $body;
             }
@@ -141,8 +141,8 @@ class WaBlastService
             ]);
 
             $body = $response->getBody()->getContents();
-
             $result = json_decode($body, true);
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error("Failed to parse JSON: " . json_last_error_msg());
                 return ['error' => $body];
@@ -182,9 +182,11 @@ class WaBlastService
             }
 
             $device = Device::where('deviceID', $targetDevice['deviceId'])->first();
-            $device->update([
-                'is_connected' => $isConnected,
-            ]);
+            if ($device) {
+                $device->update([
+                    'is_connected' => $isConnected,
+                ]);
+            }
 
             if (!$isConnected) {
                 return [
@@ -213,7 +215,7 @@ class WaBlastService
             $device = Device::where('deviceID', $deviceId)->first();
 
             // Check if quota is exhausted
-            if ($device->quota <= 0) {
+            if ($device && $device->quota <= 0) {
                 return [
                     'error' => 'Message quota exhausted. Please purchase additional quota to continue sending messages.',
                     'success' => false,
@@ -252,12 +254,14 @@ class WaBlastService
             }
 
             // If message was sent successfully, decrease the quota
-            if (isset($result['success']) && $result['success']) {
+            if (isset($result['success']) && $result['success'] && $device) {
                 $device->decrement('quota');
-            }
 
-            // Create message history record
-            $this->logMessageHistory($deviceId, $to, $message, $result);
+                // Check if quota is now depleted after this message
+                if ($device->fresh()->quota <= 0) {
+                    $result['quotaWarning'] = 'This was your last message. Your quota is now depleted.';
+                }
+            }
 
             return $result;
         } catch (GuzzleException $e) {
@@ -281,6 +285,17 @@ class WaBlastService
     public function sendMedia(string $deviceId, string $to, string $caption, $media = null): array
     {
         try {
+            $device = Device::where('deviceID', $deviceId)->first();
+
+            // Check if quota is exhausted
+            if ($device && $device->quota <= 0) {
+                return [
+                    'error' => 'Message quota exhausted. Please purchase additional quota to continue sending messages.',
+                    'success' => false,
+                    'quotaExhausted' => true
+                ];
+            }
+
             $tokenResult = $this->getAuthToken();
             if (isset($tokenResult['error'])) {
                 return $tokenResult;
@@ -326,8 +341,15 @@ class WaBlastService
                 return ['error' => 'Invalid response format', 'raw_response' => $body];
             }
 
-            // Create message history record with media tag
-            // $this->logMessageHistory($deviceId, $to, $caption . ' [Media Message]', $result);
+            // If message was sent successfully, decrease the quota
+            if (isset($result['success']) && $result['success'] && $device) {
+                $device->decrement('quota');
+
+                // Check if quota is now depleted after this message
+                if ($device->fresh()->quota <= 0) {
+                    $result['quotaWarning'] = 'This was your last message. Your quota is now depleted.';
+                }
+            }
 
             return $result;
         } catch (GuzzleException $e) {
@@ -339,36 +361,13 @@ class WaBlastService
         }
     }
 
-    private function logMessageHistory(string $deviceId, string $recipient, string $content, array $response): void
-    {
-        try {
-            $device = Device::where('deviceID', $deviceId)->first();
-
-            // Check if there's a contact record for this recipient
-            $contactId = null;
-            $contact = Contact::where('phone', $recipient)->first();
-            if ($contact) {
-                $contactId = $contact->id;
-            }
-
-            MessageHistory::create([
-                'subscription_id' => $device->subscription_id,
-                'device_id' => $device->id,
-                'contact_id' => $contactId,
-                'message' => $content,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Failed to log message history: ' . $e->getMessage());
-        }
-    }
-
     public function sendMessageToGroup(string $deviceId, string $groupId, string $message): array
     {
         try {
             $device = Device::where('deviceID', $deviceId)->first();
 
             // Check if quota is exhausted
-            if ($device->quota <= 0) {
+            if ($device && $device->quota <= 0) {
                 return [
                     'error' => 'Message quota exhausted. Please purchase additional quota to continue sending messages.',
                     'success' => false,
@@ -381,6 +380,7 @@ class WaBlastService
                 return $tokenResult;
             }
 
+            // Ensure the group ID has the correct format with @g.us suffix
             if (strpos($groupId, '@g.us') === false) {
                 $groupId = $groupId . '@g.us';
             }
@@ -406,8 +406,15 @@ class WaBlastService
                 return ['error' => 'Invalid response format', 'raw_response' => $body];
             }
 
-            // Create message history record for group message
-            $this->logMessageHistory($deviceId, "group-" . $groupId, $message, $result);
+            // If message was sent successfully, decrease the quota
+            if (isset($result['success']) && $result['success'] && $device) {
+                $device->decrement('quota');
+
+                // Check if quota is now depleted after this message
+                if ($device->fresh()->quota <= 0) {
+                    $result['quotaWarning'] = 'This was your last message. Your quota is now depleted.';
+                }
+            }
 
             return $result;
         } catch (GuzzleException $e) {
@@ -419,13 +426,28 @@ class WaBlastService
         }
     }
 
-
     public function sendMediaToGroup(string $deviceId, string $groupId, string $caption, $media = null): array
     {
         try {
+            $device = Device::where('deviceID', $deviceId)->first();
+
+            // Check if quota is exhausted
+            if ($device && $device->quota <= 0) {
+                return [
+                    'error' => 'Message quota exhausted. Please purchase additional quota to continue sending messages.',
+                    'success' => false,
+                    'quotaExhausted' => true
+                ];
+            }
+
             $tokenResult = $this->getAuthToken();
             if (isset($tokenResult['error'])) {
                 return $tokenResult;
+            }
+
+            // Ensure the group ID has the correct format with @g.us suffix
+            if (strpos($groupId, '@g.us') === false) {
+                $groupId = $groupId . '@g.us';
             }
 
             $multipart = [
@@ -468,8 +490,15 @@ class WaBlastService
                 return ['error' => 'Invalid response format', 'raw_response' => $body];
             }
 
-            // Create message history record for group media message
-            $this->logMessageHistory($deviceId, "group-" . $groupId, $caption . ' [Media Message to Group]', $result);
+            // If message was sent successfully, decrease the quota
+            if (isset($result['success']) && $result['success'] && $device) {
+                $device->decrement('quota');
+
+                // Check if quota is now depleted after this message
+                if ($device->fresh()->quota <= 0) {
+                    $result['quotaWarning'] = 'This was your last message. Your quota is now depleted.';
+                }
+            }
 
             return $result;
         } catch (GuzzleException $e) {

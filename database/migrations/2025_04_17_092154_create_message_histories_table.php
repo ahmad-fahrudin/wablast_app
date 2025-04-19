@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
             $table->text('message');
-            $table->foreignId('contact_id')->constrained()->onDelete('cascade');
-            $table->foreignId('device_id')->constrained()->onDelete('cascade');
+            $table->foreignId('contact_id')->nullable()->constrained('contacts')->onDelete('cascade');
+            $table->foreignId('device_id')->constrained('devices')->onDelete('cascade');
             $table->timestamps();
         });
     }

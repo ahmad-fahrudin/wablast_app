@@ -13,6 +13,7 @@ class MessageHistory extends Model
         'subscription_id',
         'message',
         'contact_id',
+        'group_id',
         'device_id',
     ];
 

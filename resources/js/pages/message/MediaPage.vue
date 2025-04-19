@@ -10,6 +10,7 @@ import { Textarea, Badge, Pagination } from '@/components/ui';
 import { type BreadcrumbItem } from '@/types';
 import axios from 'axios';
 import { XIcon, UploadIcon, SearchIcon } from 'lucide-vue-next';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
   devices: Array,
@@ -27,6 +28,12 @@ const contactsPerPage = ref(10);
 const paginatedContacts = ref([]);
 const totalContacts = ref(0);
 const isLoading = ref(false);
+const manualGroupId = ref('');
+
+// Add new variables for name and save option
+const manualPhone = ref('');
+const manualName = ref('');
+const saveManualContact = ref(true); // Default to save the contact
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -157,8 +164,30 @@ function addContact(contactId) {
   if (!contactIds.includes(id)) {
     console.log('Adding contact ID to form:', id);
     form.contacts.push(id);
+
+    // Show confirmation
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      icon: 'success',
+      title: 'Contact added successfully'
+    });
   } else {
     console.log('Contact already added, skipping:', id);
+
+    // Show notification
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      icon: 'info',
+      title: 'Contact already added'
+    });
   }
 }
 
@@ -169,6 +198,111 @@ function removeContact(contactId) {
   if (index !== -1) {
     form.contacts.splice(index, 1);
   }
+}
+
+// Add a manual contact (phone number) to the selected contacts
+function addManualContact() {
+  if (!manualPhone.value.trim()) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Please enter a phone number',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Basic validation for phone number - should be numeric and have at least 10 digits
+  const phoneRegex = /^\d{10,15}$/;
+  if (!phoneRegex.test(manualPhone.value.replace(/\D/g, ''))) {
+    Swal.fire({
+      title: 'Invalid Phone Number',
+      text: 'Please enter a valid phone number (10-15 digits)',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Standardize phone number format
+  let phoneNumber = manualPhone.value.replace(/\D/g, '');
+
+  // Use provided name or generate a display name from the phone number if none provided
+  const displayName = manualName.value.trim() || phoneNumber;
+
+  // Check if the number already exists in contacts
+  let existingContact = null;
+  if (props.contacts && Array.isArray(props.contacts)) {
+    existingContact = props.contacts.find(c => c.phone && c.phone.replace(/\D/g, '') === phoneNumber);
+  }
+
+  if (existingContact) {
+    // If it exists in our contacts, use that contact object
+    addContact(existingContact.id);
+
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      icon: 'info',
+      title: 'Contact already exists in your contacts'
+    });
+  } else {
+    // Create a new contact object with the phone number
+    const newContact = {
+      id: 'manual-' + Date.now(), // Use a temporary ID with timestamp
+      name: displayName,
+      phone: phoneNumber,
+      isManual: true, // Flag to identify manually added contacts
+      shouldSave: saveManualContact.value // Flag to indicate if we should save this as a new contact
+    };
+    form.contacts.push(newContact);
+
+    // If the user wants to save this as a new contact, create it in the database
+    if (saveManualContact.value) {
+      axios.post('/contacts', {
+        name: displayName,
+        phone: phoneNumber
+      }).then(response => {
+        // Update the temporary contact with the real contact ID
+        const index = form.contacts.findIndex(c =>
+          typeof c === 'object' && c.isManual && c.phone === phoneNumber
+        );
+
+        if (index !== -1 && response.data.contact) {
+          // Replace the manual contact with the saved one
+          form.contacts[index] = response.data.contact;
+
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            icon: 'success',
+            title: 'New contact created successfully'
+          });
+        }
+      }).catch(error => {
+        console.error('Error creating contact:', error);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+          icon: 'error',
+          title: 'Failed to create contact'
+        });
+      });
+    }
+  }
+
+  // Clear the input fields
+  manualPhone.value = '';
+  manualName.value = '';
 }
 
 // Helper functions for group management
@@ -185,13 +319,65 @@ function removeGroup(groupId) {
   }
 }
 
+// Add a manual WhatsApp group ID
+function addManualGroup() {
+  if (!manualGroupId.value.trim()) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Please enter a WhatsApp group ID',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Basic validation for group ID
+  if (manualGroupId.value.trim().length < 5) {
+    Swal.fire({
+      title: 'Invalid Group ID',
+      text: 'Please enter a valid WhatsApp group ID',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Create a new group object
+  const newGroup = {
+    id: 'manual-' + Date.now(), // Use a temporary ID with timestamp
+    subject: 'Group: ' + groupID,
+    description: 'Manually added WhatsApp group',
+    groupID: groupID,
+    isManual: true // Flag to identify manually added groups
+  };
+
+  // Add to selected groups
+  form.groups.push(newGroup);
+
+  // Clear the input field
+  manualGroupId.value = '';
+
+  console.log('Added manual group:', newGroup);
+}
+
 // Get selected groups
 const selectedBroadcastGroups = computed(() => {
   return broadcastGroupOptions.value.filter(group => form.groups.includes(group.id));
 });
 
 const selectedWhatsappGroups = computed(() => {
-  return whatsappGroupOptions.value.filter(group => form.groups.includes(group.id));
+  // Get existing WhatsApp groups
+  const existingGroups = whatsappGroupOptions.value.filter(group =>
+    form.groups.includes(group.id)
+  );
+
+  // Get manually added groups (which are objects, not just IDs)
+  const manualGroups = form.groups.filter(group =>
+    typeof group === 'object' && group.isManual
+  );
+
+  // Combine both types of groups
+  return [...existingGroups, ...manualGroups];
 });
 
 function formatFileSize(size) {
@@ -501,6 +687,34 @@ const sendMediaMessage = async () => {
                 </div>
                 <div v-if="form.errors.contacts" class="text-sm text-red-500 mt-1">{{ form.errors.contacts }}</div>
               </div>
+
+              <!-- Manual Contact Input -->
+              <div class="mt-4">
+                <Label for="manualPhone">Add Manual Contact</Label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <Input
+                    id="manualPhone"
+                    v-model="manualPhone"
+                    type="text"
+                    placeholder="Enter phone number"
+                    class="flex-1"
+                  />
+                  <Input
+                    id="manualName"
+                    v-model="manualName"
+                    type="text"
+                    placeholder="Enter name (optional)"
+                    class="flex-1"
+                  />
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                  <Button type="button" variant="outline" @click="addManualContact">Add Contact</Button>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" v-model="saveManualContact" />
+                    <span>Save as new contact</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <!-- Broadcast Groups Selection -->
@@ -587,6 +801,21 @@ const sendMediaMessage = async () => {
                 </div>
               </div>
               <div v-if="form.errors.groups" class="text-sm text-red-500 mt-1">{{ form.errors.groups }}</div>
+
+              <!-- Manual Group ID Input -->
+              <div class="mt-4">
+                <Label for="manualGroupId">Add Manual WhatsApp Group ID</Label>
+                <div class="flex items-center gap-2 mt-2">
+                  <Input
+                    id="manualGroupId"
+                    v-model="manualGroupId"
+                    type="text"
+                    placeholder="Enter WhatsApp group ID"
+                    class="flex-1"
+                  />
+                  <Button type="button" variant="outline" @click="addManualGroup">Add Group</Button>
+                </div>
+              </div>
             </div>
 
             <!-- Media Upload -->
