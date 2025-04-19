@@ -37,4 +37,29 @@ class WaBlastController extends Controller
             ], 500);
         }
     }
+
+    public function checkDeviceStatus(Request $request)
+    {
+        $request->validate([
+            'deviceId' => 'required|string',
+        ]);
+
+        try {
+            // Get token first
+            $tokenResult = $this->waBlastService->getAuthToken();
+            if (!$tokenResult) {
+                return response()->json($tokenResult);
+            }
+
+            $this->waBlastService->checkDevices($request->deviceId, $tokenResult);
+
+            return redirect()->route('devices.index');
+        } catch (Exception $e) {
+            Log::error('Error checking device status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error checking device status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

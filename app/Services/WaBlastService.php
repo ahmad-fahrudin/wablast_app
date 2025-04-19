@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Device;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
@@ -149,6 +150,58 @@ class WaBlastService
         } catch (GuzzleException $e) {
             Log::error('Error deleting device: ' . $e->getMessage());
             return ['error' => 'Failed to delete device: ' . $e->getMessage()];
+        }
+    }
+
+    public function checkDevices(string $deviceId, string $token): array
+    {
+        try {
+            $response = $this->client->get($this->apiBaseUrl . '/devices', [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $token
+                ]
+            ]);
+
+            $result = json_decode($response->getBody()->getContents(), true);
+
+            $devices = $result['devices'];
+            $isConnected = false;
+            $targetDevice = null;
+
+            // Find the specific device in the list
+            foreach ($devices as $device) {
+                if ($device['deviceId'] === $deviceId) {
+                    $isConnected = ($device['status'] === 'connected');
+                    $targetDevice = $device;
+                    break;
+                }
+            }
+
+            $device = Device::where('deviceID', $targetDevice['deviceId'])->first();
+            $device->update([
+                'is_connected' => $isConnected,
+            ]);
+
+            if (!$isConnected) {
+                return [
+                    'success' => false,
+                    'isConnected' => false,
+                    'message' => 'Device is not connected'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'isConnected' => true,
+            ];
+        } catch (GuzzleException $e) {
+            Log::error('Error checking devices: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error checking devices: ' . $e->getMessage()
+            ];
         }
     }
 }

@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Integrasi WAblast Routes
     Route::get('/generate-qr', [WaBlastController::class, 'generateQR'])->name('blast.generate.qr');
+    Route::get('/device-check', [WaBlastController::class, 'checkDeviceStatus'])->name('blast.device.check');
 });
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

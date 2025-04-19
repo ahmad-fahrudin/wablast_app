@@ -73,8 +73,67 @@ const handleGenerateQR = async () => {
             if (response.data.error) {
                 error.value = response.data.error;
             } else {
-                // Assuming the response is base64 encoded image
-                qrCode.value = `data:image/png;base64,${response.data}`;
+                // Store QR code data
+                const qrCodeData = `data:image/png;base64,${response.data}`;
+                qrCode.value = qrCodeData;
+
+                // Display QR code in SweetAlert with 1-minute timer
+                const swalInstance = Swal.fire({
+                    title: 'Scan QR Code dengan WhatsApp',
+                    html: `
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="bg-white border-4 border-gray-200 rounded-md p-3 shadow-lg mb-4">
+                                <img src="${qrCodeData}" alt="WhatsApp QR Code" class="w-full max-w-xs md:max-w-md h-auto object-contain" />
+                            </div>
+                            <div class="text-center max-w-md mx-auto">
+                                <p class="text-sm text-gray-500">
+                                    Scan QR code ini menggunakan aplikasi WhatsApp di ponsel Anda melalui menu Perangkat Tertaut.
+                                </p>
+                                <p class="text-sm text-red-600 font-bold mt-2">
+                                    Tunggu 1 menit sebelum bisa menutup dialog.<br>
+                                    Jika ada kendala hubungi admin via WA.
+                                </p>
+                                <p class="text-sm font-semibold mt-3" id="countdown-timer">Tunggu: 60 detik</p>
+                            </div>
+                        </div>
+                    `,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#3085d6',
+                    width: 'auto',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        // Disable the confirm button initially
+                        Swal.getConfirmButton().disabled = true;
+                        Swal.getConfirmButton().classList.add('opacity-50', 'cursor-not-allowed');
+
+                        // Set up countdown timer
+                        let timerSeconds = 60;
+                        const timerElement = document.getElementById('countdown-timer');
+
+                        const countdown = setInterval(() => {
+                            timerSeconds--;
+                            if (timerElement) {
+                                timerElement.textContent = `Tunggu: ${timerSeconds} detik`;
+                            }
+
+                            if (timerSeconds <= 0) {
+                                clearInterval(countdown);
+                                if (timerElement) {
+                                    timerElement.textContent = 'Anda sekarang dapat menutup dialog ini';
+                                    timerElement.classList.add('text-green-600');
+                                }
+
+                                // Enable the confirm button
+                                Swal.getConfirmButton().disabled = false;
+                                Swal.getConfirmButton().classList.remove('opacity-50', 'cursor-not-allowed');
+                            }
+                        }, 1000);
+                    }
+                }).then((result) => {
+                    // When dialog is closed, hit the device-check route with deviceId parameter
+                    router.visit(`/device-check?deviceId=${deviceId.value}`);
+                });
             }
         } catch (err) {
             error.value = err.response?.data?.message || 'Failed to generate QR code. Please try again.';
@@ -183,25 +242,6 @@ const handleGenerateQR = async () => {
                                 </span>
                             </Button>
                         </CardFooter>
-                    </Card>
-
-                    <!-- QR Code Display -->
-                    <Card v-if="qrCode" class="border-blue-200">
-                        <CardHeader>
-                            <CardTitle class="text-center">Scan QR Code dengan WhatsApp</CardTitle>
-                        </CardHeader>
-                        <CardContent class="p-4">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="bg-white border-4 border-gray-200 rounded-md p-3 shadow-lg mb-4">
-                                    <img :src="qrCode" alt="WhatsApp QR Code" class="w-full max-w-xs md:max-w-md h-auto object-contain" />
-                                </div>
-                                <div class="text-center max-w-md mx-auto">
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        Scan QR code ini menggunakan aplikasi WhatsApp di ponsel Anda melalui menu Perangkat Tertaut.
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
                     </Card>
 
                     <!-- Warning Alert -->
