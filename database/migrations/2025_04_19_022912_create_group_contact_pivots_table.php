@@ -6,22 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('groups', function (Blueprint $table) {
-            $table->id();
+        Schema::create('group_contact_pivots', function (Blueprint $table) {
+            $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
+            $table->foreignId('contact_id')->constrained('contacts')->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('groups');
+        Schema::dropIfExists('group_contact_pivots');
     }
 };

@@ -25,4 +25,9 @@ class Contact extends Model
     {
         return $this->hasMany(MessageHistory::class, 'contact_id');
     }
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_contact_pivots', 'contact_id', 'group_id');
+    }
 }

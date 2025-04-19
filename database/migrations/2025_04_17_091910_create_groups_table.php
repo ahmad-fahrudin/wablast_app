@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contacts', function (Blueprint $table) {
+        Schema::create('groups', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->string('phone');
-            $table->boolean('is_active')->default(true);
+            $table->enum('type', ['contact', 'whatsapp'])->default('contact');
+            $table->string('groupID')->unique()->nullable();
+            $table->string('subject');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contacts');
+        Schema::dropIfExists('groups');
     }
 };

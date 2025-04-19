@@ -2,10 +2,11 @@
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\DeviceController;
-use App\Http\Controllers\SubscriptionController;
-use App\Http\Controllers\WaBlastController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\WaBlastController;
+use App\Http\Controllers\SubscriptionController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -35,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('subscriptions/invoice', [SubscriptionController::class, 'invoice'])->name('subscriptions.invoice');
     Route::post('subscriptions/invoice', [SubscriptionController::class, 'updateStatusInvoice'])->name('subscriptions.invoice.status');
     Route::get('subscriptions/invoice/{id}', [SubscriptionController::class, 'showInvoice'])->name('subscriptions.invoice.show');
+
     // Contact routes
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::get('contacts/create', [ContactController::class, 'create'])->name('contacts.create');
@@ -42,6 +44,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('contacts/{id}/edit', [ContactController::class, 'edit'])->name('contacts.edit');
     Route::put('contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
     Route::delete('contacts/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+    // groups
+    Route::get('groups', [GroupController::class, 'index'])->name('groups.index');
+    Route::get('groups/create', [GroupController::class, 'create'])->name('groups.create');
+    Route::post('groups', [GroupController::class, 'store'])->name('groups.store');
+    Route::get('groups/{id}/edit', [GroupController::class, 'edit'])->name('groups.edit');
+    Route::put('groups/{id}', [GroupController::class, 'update'])->name('groups.update');
+    Route::delete('groups/{id}', [GroupController::class, 'destroy'])->name('groups.destroy');
 
     // Integrasi WAblast Routes
     Route::get('/generate-qr', [WaBlastController::class, 'generateQR'])->name('blast.generate.qr');

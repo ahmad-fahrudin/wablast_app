@@ -29,15 +29,10 @@ const mainNavItems: NavItem[] = [
                 icon: Contact,
             },
             {
-                title: 'Group Whatsapp',
-                href: '/group-contacts',
+                title: 'Groups',
+                href: '/groups',
                 icon: BookUser,
             },
-            {
-                title: 'Group Contact',
-                href: '/group-contacts',
-                icon: BookUser,
-            }
         ]
     },
         {
