@@ -210,9 +210,24 @@ class WaBlastService
     public function sendMessage(string $deviceId, string $to, string $message): array
     {
         try {
+            $device = Device::where('deviceID', $deviceId)->first();
+
+            // Check if quota is exhausted
+            if ($device->quota <= 0) {
+                return [
+                    'error' => 'Message quota exhausted. Please purchase additional quota to continue sending messages.',
+                    'success' => false,
+                    'quotaExhausted' => true
+                ];
+            }
+
             $tokenResult = $this->getAuthToken();
             if (isset($tokenResult['error'])) {
                 return $tokenResult;
+            }
+
+            if (strpos($to, '@s.whatsapp.net') === false) {
+                $to = $to . '@s.whatsapp.net';
             }
 
             $response = $this->client->post($this->apiBaseUrl . '/send', [
@@ -234,6 +249,11 @@ class WaBlastService
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error("Failed to parse JSON response: " . json_last_error_msg());
                 return ['error' => 'Invalid response format', 'raw_response' => $body];
+            }
+
+            // If message was sent successfully, decrease the quota
+            if (isset($result['success']) && $result['success']) {
+                $device->decrement('quota');
             }
 
             // Create message history record
@@ -307,7 +327,7 @@ class WaBlastService
             }
 
             // Create message history record with media tag
-            $this->logMessageHistory($deviceId, $to, $caption . ' [Media Message]', $result);
+            // $this->logMessageHistory($deviceId, $to, $caption . ' [Media Message]', $result);
 
             return $result;
         } catch (GuzzleException $e) {
@@ -323,10 +343,6 @@ class WaBlastService
     {
         try {
             $device = Device::where('deviceID', $deviceId)->first();
-            if (!$device) {
-                Log::error("Device not found with ID: {$deviceId}");
-                return;
-            }
 
             // Check if there's a contact record for this recipient
             $contactId = null;
@@ -349,9 +365,24 @@ class WaBlastService
     public function sendMessageToGroup(string $deviceId, string $groupId, string $message): array
     {
         try {
+            $device = Device::where('deviceID', $deviceId)->first();
+
+            // Check if quota is exhausted
+            if ($device->quota <= 0) {
+                return [
+                    'error' => 'Message quota exhausted. Please purchase additional quota to continue sending messages.',
+                    'success' => false,
+                    'quotaExhausted' => true
+                ];
+            }
+
             $tokenResult = $this->getAuthToken();
             if (isset($tokenResult['error'])) {
                 return $tokenResult;
+            }
+
+            if (strpos($groupId, '@g.us') === false) {
+                $groupId = $groupId . '@g.us';
             }
 
             $response = $this->client->post($this->apiBaseUrl . '/groups/send', [
