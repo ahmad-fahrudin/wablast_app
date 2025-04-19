@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\WaBlastController;
+use App\Http\Controllers\ContactController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -33,6 +34,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('subscriptions/payment', [SubscriptionController::class, 'payment'])->name('subscriptions.payment');
     Route::get('subscriptions/invoice', [SubscriptionController::class, 'invoice'])->name('subscriptions.invoice');
     Route::post('subscriptions/invoice', [SubscriptionController::class, 'updateStatusInvoice'])->name('subscriptions.invoice.status');
+    Route::get('subscriptions/invoice/{id}', [SubscriptionController::class, 'showInvoice'])->name('subscriptions.invoice.show');
+    // Contact routes
+    Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
+    Route::get('contacts/create', [ContactController::class, 'create'])->name('contacts.create');
+    Route::post('contacts', [ContactController::class, 'store'])->name('contacts.store');
+    Route::get('contacts/{id}/edit', [ContactController::class, 'edit'])->name('contacts.edit');
+    Route::put('contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
+    Route::delete('contacts/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
     // Integrasi WAblast Routes
     Route::get('/generate-qr', [WaBlastController::class, 'generateQR'])->name('blast.generate.qr');

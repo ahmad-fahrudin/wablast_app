@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { NotebookText, ShoppingCart, House , MonitorSmartphone, CreditCard, Contact, BookUser, Album  } from 'lucide-vue-next';
+import { NotebookText, ShoppingCart, House, MonitorSmartphone, CreditCard, Contact, BookUser, Album, MessageSquare, Calendar, Clock, Bell, FileText, Forward } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -25,13 +25,59 @@ const mainNavItems: NavItem[] = [
         children: [
             {
                 title: 'Contact',
-                href: '/subscriptions',
+                href: '/contacts',
                 icon: Contact,
             },
             {
-                title: 'Group',
-                href: '/subscriptions/invoice',
+                title: 'Group Whatsapp',
+                href: '/group-contacts',
                 icon: BookUser,
+            },
+            {
+                title: 'Group Contact',
+                href: '/group-contacts',
+                icon: BookUser,
+            }
+        ]
+    },
+        {
+        title: 'Message',
+        icon: MessageSquare,
+        children: [
+            {
+                title: 'New Message',
+                href: '/message/new',
+                icon: FileText,
+            },
+            {
+                title: 'Schedule',
+                href: '/message/schedule',
+                icon: Calendar,
+            },
+            {
+                title: 'Auto Responder',
+                href: '/message/auto-responder',
+                icon: Clock,
+            },
+            {
+                title: 'Reminder',
+                href: '/message/reminder',
+                icon: Bell,
+            },
+            {
+                title: 'Auto Reply',
+                href: '/message/auto-reply',
+                icon: MessageSquare,
+            },
+            {
+                title: 'Quick Reply',
+                href: '/message/quick-reply',
+                icon: MessageSquare,
+            },
+            {
+                title: 'Forward Message',
+                href: '/message/forward',
+                icon: Forward,
             }
         ]
     },
