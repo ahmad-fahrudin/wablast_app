@@ -53,7 +53,7 @@ const fetchContacts = async (page = 1, search = '') => {
   isLoading.value = true;
   try {
     console.log('Fetching contacts with params:', { page, search, perPage: contactsPerPage.value });
-    const response = await axios.get('/api/contacts', {
+    const response = await axios.get('/contacts-paginate', {
       params: {
         page,
         search,

@@ -50,7 +50,7 @@ const form = useForm({
 const fetchContacts = async (page = 1, search = '') => {
   isLoading.value = true;
   try {
-    const response = await axios.get('/api/contacts', {
+    const response = await axios.get('/contacts-paginate', {
       params: {
         page,
         search,

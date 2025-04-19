@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('contacts/{id}/edit', [ContactController::class, 'edit'])->name('contacts.edit');
     Route::put('contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
     Route::delete('contacts/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+    Route::get('/contacts-paginate', [ContactController::class, 'getContactsForSelector']);
 
     // groups
     Route::get('groups', [GroupController::class, 'index'])->name('groups.index');
@@ -64,11 +65,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('message-page', [MessageController::class, 'messagePage'])->name('messages.page');
     Route::get('media-page', [MessageController::class, 'mediaPage'])->name('media.page');
 
-    // API routes for authenticated users
     Route::prefix('api')->group(function () {
-        // Contact routes
-        Route::get('/contacts', [ContactController::class, 'getContactsForSelector']);
-
         // Message routes
         Route::post('/messages/send', [MessageController::class, 'sendTextMessage']);
         Route::post('/messages/send-media', [MessageController::class, 'sendMediaMessage']);
